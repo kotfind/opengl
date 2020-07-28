@@ -7,22 +7,95 @@
 using namespace std;
 
 SDL_Window *win;
+SDL_GLContext cont;
 
-const char* frag_shader_source =\
-"#version 330 core\n"
-"out vec4 fragColor;\n"
-"void main()\n"
-"{\n"
-"    fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
+struct Shader {
+    GLuint shader;
+    GLenum type;
+    GLchar *source;
 
-const char* vert_shader_source =\
-"#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
+    Shader(const GLenum type) {
+        shader = glCreateShader(type);
+        this->type = type;
+    }
+
+    void load(const char* path) {
+        FILE *file = NULL;
+        file = fopen(path, "r");
+        if (file == NULL) {
+            cerr << "ERROR::SHADER::" << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << "::SOURCE_FILE_CANNOT_BE_OPENED" << endl;
+
+            SDL_GL_DeleteContext(cont);
+            SDL_DestroyWindow(win);
+            SDL_Quit();
+            exit(1);
+        }
+
+        fseek(file, 0L, SEEK_END);
+        long int size = ftell(file) + 1;
+        rewind(file);
+
+        source = (GLchar*) malloc(size * sizeof(GLchar));
+        for (int i = 0; i < size; ++i) {
+            source[i] = fgetc(file);
+        }
+        source[size - 1] = '\0';
+
+        fclose(file);
+    }
+
+    void compile() {
+        glShaderSource(shader, 1, (const GLchar**)&source, NULL);
+        glCompileShader(shader);
+
+        int success;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            char infoLog[1024];
+            glGetShaderInfoLog(shader, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
+            cerr << "ERROR::SHADER::" << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << "::COMPILATION_FAILED\n" << infoLog << endl;
+
+            SDL_GL_DeleteContext(cont);
+            SDL_DestroyWindow(win);
+            SDL_Quit();
+            exit(1);
+        }
+    }
+
+    ~Shader() {
+        free((void*)source);
+        glDeleteShader(shader);
+    }
+};
+
+struct ShaderProgram {
+    GLuint program;
+
+    ShaderProgram(const Shader *vertexShader, const Shader *fragmentShader) {
+        program = glCreateProgram();
+        glAttachShader(program, vertexShader->shader);
+        glAttachShader(program, fragmentShader->shader);
+    }
+
+    void link() {
+        glLinkProgram(program);
+
+        int success;
+        glGetProgramiv(program, GL_LINK_STATUS, &success);
+        if (!success) {
+            char infoLog[1024];
+            glGetProgramInfoLog(program, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
+            cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n" << infoLog << endl;
+
+            SDL_GL_DeleteContext(cont);
+            SDL_DestroyWindow(win);
+            SDL_Quit();
+            exit(1);
+        }
+    }
+
+    void use() { glUseProgram(program); }
+};
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -32,44 +105,22 @@ int main() {
             SDL_WINDOWPOS_CENTERED,
             800, 600,
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    SDL_GLContext cont = SDL_GL_CreateContext(win);
+    cont = SDL_GL_CreateContext(win);
 
-    // Compile shader program
-    GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vert_shader, 1, &vert_shader_source, NULL);
-    glCompileShader(vert_shader);
+    // Setting up shaders
+    Shader *vertexShader = new Shader(GL_VERTEX_SHADER);
+    vertexShader->load("vertex.glsl");
+    vertexShader->compile();
 
-    int success;
-    glGetShaderiv(vert_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[1024];
-        glGetShaderInfoLog(vert_shader, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
-        cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
-    }
-    GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(frag_shader, 1, &frag_shader_source, NULL);
-    glCompileShader(frag_shader);
+    Shader *fragmentShader = new Shader(GL_FRAGMENT_SHADER);
+    fragmentShader->load("fragment.glsl");
+    fragmentShader->compile();
 
-    glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[1024];
-        glGetShaderInfoLog(frag_shader, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
-        cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
-    }
+    ShaderProgram *program = new ShaderProgram(vertexShader, fragmentShader);
+    program->link();
 
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vert_shader);
-    glAttachShader(program, frag_shader);
-    glLinkProgram(program);
-
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-        char infoLog[1024];
-        glGetProgramInfoLog(program, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
-        cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n" << infoLog << endl;
-    }
-    glDeleteShader(vert_shader);
-    glDeleteShader(frag_shader);  
+    delete vertexShader;
+    delete fragmentShader;
 
     // Setting up vertices, VBO & VAO
     float vert[] = {
@@ -125,7 +176,7 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(program);
+        program->use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
