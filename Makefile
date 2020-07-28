@@ -1,6 +1,8 @@
 CFLAGS=-lGL -lSDL2
 
-all: main.o
+all: a.out
+
+a.out: main.o
 	g++ main.o $(CFLAGS)
 
 main.o: main.cpp
