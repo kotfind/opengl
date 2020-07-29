@@ -17,18 +17,16 @@ struct Shader {
     GLenum type;
     GLchar *source;
 
-    Shader(const GLenum type) {
-        shader = glCreateShader(type);
+    Shader(const GLenum type, const char* path) {
+        // Create shader
         this->type = type;
-    }
-
-    operator GLuint() const { return shader; }
-
-    void load(const char* path) {
+        this->shader = glCreateShader(this->type);
+        
+        // Load source
         FILE *file = NULL;
         file = fopen(path, "r");
         if (file == NULL) {
-            cerr << "ERROR::SHADER::" << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << "::SOURCE_FILE_CANNOT_BE_OPENED" << endl;
+            cerr << "ERROR::SHADER::" << (this->type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << "::SOURCE_FILE_CANNOT_BE_OPENED" << endl;
 
             SDL_GL_DeleteContext(cont);
             SDL_DestroyWindow(win);
@@ -40,25 +38,24 @@ struct Shader {
         long int size = ftell(file) + 1;
         rewind(file);
 
-        source = (GLchar*) malloc(size * sizeof(GLchar));
+        this->source = (GLchar*) malloc(size * sizeof(GLchar));
         for (int i = 0; i < size; ++i) {
-            source[i] = fgetc(file);
+            this->source[i] = fgetc(file);
         }
-        source[size - 1] = '\0';
+        this->source[size - 1] = '\0';
 
         fclose(file);
-    }
 
-    void compile() {
-        glShaderSource(shader, 1, (const GLchar**)&source, NULL);
-        glCompileShader(shader);
+        // Compile
+        glShaderSource(*this, 1, (const GLchar**)&(this->source), NULL);
+        glCompileShader(*this);
 
         int success;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        glGetShaderiv(*this, GL_COMPILE_STATUS, &success);
         if (!success) {
             char infoLog[1024];
-            glGetShaderInfoLog(shader, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
-            cerr << "ERROR::SHADER::" << (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << "::COMPILATION_FAILED\n" << infoLog << endl;
+            glGetShaderInfoLog(*this, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
+            cerr << "ERROR::SHADER::" << (this->type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT") << "::COMPILATION_FAILED\n" << infoLog << endl;
 
             SDL_GL_DeleteContext(cont);
             SDL_DestroyWindow(win);
@@ -67,9 +64,11 @@ struct Shader {
         }
     }
 
+    operator GLuint() const { return this->shader; }
+
     ~Shader() {
-        free((void*)source);
-        glDeleteShader(shader);
+        free((void*)(this->source));
+        glDeleteShader(*this);
     }
 };
 
@@ -77,36 +76,25 @@ struct ShaderProgram {
     GLuint program;
 
     ShaderProgram(const char *vertexShaderPath, const char *fragmentShaderPath) {
-        program = glCreateProgram();
+        // Create program
+        this->program = glCreateProgram();
 
-        Shader *vertexShader = new Shader(GL_VERTEX_SHADER);
-        vertexShader->load(vertexShaderPath);
-        vertexShader->compile();
+        // Create shaders
+        Shader *vertexShader = new Shader(GL_VERTEX_SHADER, vertexShaderPath);
+        Shader *fragmentShader = new Shader(GL_FRAGMENT_SHADER, fragmentShaderPath);
 
-        Shader *fragmentShader = new Shader(GL_FRAGMENT_SHADER);
-        fragmentShader->load(fragmentShaderPath);
-        fragmentShader->compile();
+        // Attach Shaders
+        glAttachShader(*this, *vertexShader);
+        glAttachShader(*this, *fragmentShader);
 
-        attachShader(vertexShader);
-        attachShader(fragmentShader);
-        link();
-
-        delete vertexShader;
-        delete fragmentShader;
-    }
-
-    operator GLuint() const { return program; }
-
-    void attachShader(const Shader *shader) { glAttachShader(program, *shader); }
-
-    void link() {
-        glLinkProgram(program);
+        // Link
+        glLinkProgram(*this);
 
         int success;
-        glGetProgramiv(program, GL_LINK_STATUS, &success);
+        glGetProgramiv(*this, GL_LINK_STATUS, &success);
         if (!success) {
             char infoLog[1024];
-            glGetProgramInfoLog(program, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
+            glGetProgramInfoLog(*this, sizeof(infoLog)/sizeof(infoLog[0]), NULL, infoLog);
             cout << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n" << infoLog << endl;
 
             SDL_GL_DeleteContext(cont);
@@ -114,11 +102,16 @@ struct ShaderProgram {
             SDL_Quit();
             exit(1);
         }
+
+        delete vertexShader;
+        delete fragmentShader;
     }
 
-    void use() { glUseProgram(program); }
+    operator GLuint() const { return this->program; }
 
-    void set1i(const char *name, const int val) { glUniform1i(glGetUniformLocation(program, name), val); }
+    void use() { glUseProgram(*this); }
+
+    void set1i(const char *name, const int val) { glUniform1i(glGetUniformLocation(*this, name), val); }
 };
 
 struct Texture {
