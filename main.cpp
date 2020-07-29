@@ -71,11 +71,9 @@ struct Shader {
 struct ShaderProgram {
     GLuint program;
 
-    ShaderProgram(const Shader *vertexShader, const Shader *fragmentShader) {
-        program = glCreateProgram();
-        glAttachShader(program, vertexShader->shader);
-        glAttachShader(program, fragmentShader->shader);
-    }
+    ShaderProgram() { program = glCreateProgram(); }
+
+    void attachShader(const Shader *shader) { glAttachShader(program, shader->shader); }
 
     void link() {
         glLinkProgram(program);
@@ -94,6 +92,23 @@ struct ShaderProgram {
         }
     }
 
+    void setupAll(const char *vertexShaderPath, const char *fragmentShaderPath) {
+        Shader *vertexShader = new Shader(GL_VERTEX_SHADER);
+        vertexShader->load(vertexShaderPath);
+        vertexShader->compile();
+
+        Shader *fragmentShader = new Shader(GL_FRAGMENT_SHADER);
+        fragmentShader->load(fragmentShaderPath);
+        fragmentShader->compile();
+
+        attachShader(vertexShader);
+        attachShader(fragmentShader);
+        link();
+
+        delete vertexShader;
+        delete fragmentShader;
+    }
+
     void use() { glUseProgram(program); }
 };
 
@@ -108,19 +123,8 @@ int main() {
     cont = SDL_GL_CreateContext(win);
 
     // Setting up shaders
-    Shader *vertexShader = new Shader(GL_VERTEX_SHADER);
-    vertexShader->load("vertex.glsl");
-    vertexShader->compile();
-
-    Shader *fragmentShader = new Shader(GL_FRAGMENT_SHADER);
-    fragmentShader->load("fragment.glsl");
-    fragmentShader->compile();
-
-    ShaderProgram *program = new ShaderProgram(vertexShader, fragmentShader);
-    program->link();
-
-    delete vertexShader;
-    delete fragmentShader;
+    ShaderProgram *program = new ShaderProgram();
+    program->setupAll("vertex.glsl", "fragment.glsl");
 
     // Setting up vertices, VBO & VAO
     float vert[] = {
@@ -135,17 +139,16 @@ int main() {
         1, 2, 3
     };
 
-    GLuint VBO, VAO, EBO;
+    GLuint VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-    glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
