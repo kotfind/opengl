@@ -7,7 +7,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 using namespace std;
+using namespace glm;
 
 SDL_Window *win;
 SDL_GLContext cont;
@@ -111,7 +116,8 @@ struct ShaderProgram {
 
     void use() { glUseProgram(*this); }
 
-    void set1i(const char *name, const int val) { glUniform1i(glGetUniformLocation(*this, name), val); }
+    void set1i(const char *name, const GLint val) { glUniform1i(glGetUniformLocation(*this, name), val); }
+    void setMatrix4fv(const char *name, const int count, const GLfloat *val) { glUniformMatrix4fv(glGetUniformLocation(*this, name), count, GL_FALSE, val); }
 };
 
 struct Texture {
@@ -159,21 +165,64 @@ int main() {
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     cont = SDL_GL_CreateContext(win);
 
+    // Setting up opengl
+    glEnable(GL_DEPTH_TEST);
+
     // Setting up shaders
     ShaderProgram *program = new ShaderProgram("vertex.glsl", "fragment.glsl");
 
     // Setting up vertices, VBO & VAO
-    float vert[] = {
+    const float vert[] = {
         // Coordinates        // Colors           // Texture coordinates
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
+         0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.f, 0.f,
+        -0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 0.0f,   0.f, 1.f,
+
+         0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
+         0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 0.f,
+        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 1.f,
+
+         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
+         0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
+         0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 0.f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 1.f,
+
+        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
+        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 0.f,
+        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 1.f,
+
+         0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
+        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 0.f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 1.f,
+
+         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
+        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 0.f,
+         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 1.f,
     };
 
-    unsigned int indices[] = {
+    const unsigned int indices[] = {
         0, 1, 3,
         1, 2, 3,
+
+        4, 5, 7,
+        5, 6, 7,
+
+        8, 9, 11,
+        9, 10, 11,
+
+        12, 13, 15,
+        13, 14, 15,
+
+        16, 17, 19,
+        17, 18, 19,
+
+        20, 21, 23,
+        21, 22, 23,
     };
 
     GLuint VAOs[1], VBOs[1], EBOs[1];
@@ -211,6 +260,9 @@ int main() {
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for(;;) {
+        // Count time
+        float time = SDL_GetTicks() / 1000.f;
+
         // Count resolution & set viewport
         int W, H;
         SDL_GetWindowSize(win, &W, &H);
@@ -228,7 +280,7 @@ int main() {
 
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, *texture1);
@@ -236,8 +288,38 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, *texture2);
 
         program->use();
-        glBindVertexArray(VAOs[0]);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // Transformations
+        const vec3 cubePos[] = {
+            vec3( 0.0f,  0.0f,  0.0f), 
+            vec3( 2.0f,  5.0f, -15.0f), 
+            vec3(-1.5f, -2.2f, -2.5f),  
+            vec3(-3.8f, -2.0f, -12.3f),  
+            vec3( 2.4f, -0.4f, -3.5f),  
+            vec3(-1.7f,  3.0f, -7.5f),  
+            vec3( 1.3f, -2.0f, -2.5f),  
+            vec3( 1.5f,  2.0f, -2.5f), 
+            vec3( 1.5f,  0.2f, -1.5f), 
+            vec3(-1.3f,  1.0f, -1.5f)  
+        };
+
+        mat4 projection = perspective(float(M_PI) / 3.f, float(W) / float(H), 0.1f, 100.f);
+        program->setMatrix4fv("projection", 1, value_ptr(projection));
+
+        mat4 view = mat4(1.f);
+        view = translate(view, vec3(0.f, 0.f, -3.f));
+        program->setMatrix4fv("view", 1, value_ptr(view));
+
+        for (int i = 0; i < sizeof(cubePos)/sizeof(cubePos[0]); ++i) {
+            mat4 model = mat4(1.f);
+            model = translate(model, cubePos[i]);
+            model = rotate(model, time * 2.f + float(i) * 0.3f, vec3(0.5f, sin(i * 100.f + 1.f), 0.0f));
+            
+            program->setMatrix4fv("model", 1, value_ptr(model));
+
+            glBindVertexArray(VAOs[0]);
+            glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(indices[0]), GL_UNSIGNED_INT, 0);
+        }
 
         glBindVertexArray(0);
 
