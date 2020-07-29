@@ -118,7 +118,7 @@ int main() {
     win = SDL_CreateWindow("",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            800, 600,
+            800, 800,
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     cont = SDL_GL_CreateContext(win);
 
@@ -139,24 +139,23 @@ int main() {
         1, 2, 3
     };
 
-    GLuint VAO, VBO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    GLuint VAOs[1], VBOs[1], EBOs[1];
+    glGenVertexArrays(1, VAOs);
+    glGenBuffers     (1, VBOs);
+    glGenBuffers     (1, EBOs);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindVertexArray(VAOs[0]);
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for(;;) {
@@ -180,15 +179,16 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         program->use();
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
         glBindVertexArray(0);
 
         SDL_GL_SwapWindow(win);
     }
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, VAOs);
+    glDeleteBuffers     (1, VBOs);
 
     SDL_GL_DeleteContext(cont);
     SDL_DestroyWindow(win);
