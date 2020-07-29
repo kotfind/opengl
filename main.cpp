@@ -161,7 +161,7 @@ int main() {
     win = SDL_CreateWindow("",
             SDL_WINDOWPOS_CENTERED,
             SDL_WINDOWPOS_CENTERED,
-            800, 800,
+            800, 600,
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     cont = SDL_GL_CreateContext(win);
 
@@ -307,7 +307,9 @@ int main() {
         program->setMatrix4fv("projection", 1, value_ptr(projection));
 
         mat4 view = mat4(1.f);
-        view = translate(view, vec3(0.f, 0.f, -3.f));
+        view = lookAt(vec3(sin(time), 0.f, cos(time)) * 5.f,
+                      vec3(0.f),
+                      vec3(0.f, 1.f, 0.f));
         program->setMatrix4fv("view", 1, value_ptr(view));
 
         for (int i = 0; i < sizeof(cubePos)/sizeof(cubePos[0]); ++i) {
