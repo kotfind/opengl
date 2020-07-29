@@ -173,36 +173,36 @@ int main() {
 
     // Setting up vertices, VBO & VAO
     const float vert[] = {
-        // Coordinates        // Colors           // Texture coordinates
-         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
-         0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.f, 0.f,
-        -0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 0.0f,   0.f, 1.f,
+        // Coordinates        // Texture coordinates
+         0.5f,  0.5f, -0.5f,   1.f, 1.f,
+         0.5f, -0.5f, -0.5f,   1.f, 0.f,
+        -0.5f, -0.5f, -0.5f,   0.f, 0.f,
+        -0.5f,  0.5f, -0.5f,   0.f, 1.f,
 
-         0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
-         0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
-        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 0.f,
-        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 1.f,
+         0.5f,  0.5f,  0.5f,   1.f, 1.f,
+         0.5f, -0.5f,  0.5f,   1.f, 0.f,
+        -0.5f, -0.5f,  0.5f,   0.f, 0.f,
+        -0.5f,  0.5f,  0.5f,   0.f, 1.f,
 
-         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
-         0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
-         0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 0.f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 1.f,
+         0.5f,  0.5f, -0.5f,   1.f, 1.f,
+         0.5f, -0.5f, -0.5f,   1.f, 0.f,
+         0.5f, -0.5f,  0.5f,   0.f, 0.f,
+         0.5f,  0.5f,  0.5f,   0.f, 1.f,
 
-        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
-        -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 0.f,
-        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 1.f,
+        -0.5f, -0.5f, -0.5f,   1.f, 1.f,
+        -0.5f,  0.5f, -0.5f,   1.f, 0.f,
+        -0.5f,  0.5f,  0.5f,   0.f, 0.f,
+        -0.5f, -0.5f,  0.5f,   0.f, 1.f,
 
-         0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
-        -0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
-        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 0.f,
-         0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 1.f,
+         0.5f, -0.5f, -0.5f,   1.f, 1.f,
+        -0.5f, -0.5f, -0.5f,   1.f, 0.f,
+        -0.5f, -0.5f,  0.5f,   0.f, 0.f,
+         0.5f, -0.5f,  0.5f,   0.f, 1.f,
 
-         0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   1.f, 1.f,
-        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.f, 0.f,
-        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.f, 0.f,
-         0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   0.f, 1.f,
+         0.5f,  0.5f, -0.5f,   1.f, 1.f,
+        -0.5f,  0.5f, -0.5f,   1.f, 0.f,
+        -0.5f,  0.5f,  0.5f,   0.f, 0.f,
+         0.5f,  0.5f,  0.5f,   0.f, 1.f,
     };
 
     const unsigned int indices[] = {
@@ -225,38 +225,26 @@ int main() {
         21, 22, 23,
     };
 
-    GLuint VAOs[1], VBOs[1], EBOs[1];
-    glGenVertexArrays(1, VAOs);
-    glGenBuffers     (1, VBOs);
-    glGenBuffers     (1, EBOs);
+    GLuint VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers     (1, &VBO);
+    glGenBuffers     (1, &EBO);
 
-    glBindVertexArray(VAOs[0]);
-        glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
+    glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         // Coordinates attrib
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
-        // Colors attrib
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
         // Texture coordinates attrib
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
     glBindVertexArray(0);
-
-    // Setting up textures
-    Texture *texture1 = new Texture("box.jpg", GL_RGB, GL_RGB);
-    Texture *texture2 = new Texture("face.jpg", GL_RGB, GL_RGB);
-
-    program->use();
-    program->set1i("texture1", 0);
-    program->set1i("texture2", 1);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     for(;;) {
@@ -282,54 +270,32 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, *texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, *texture2);
-
         program->use();
 
         // Transformations
-        const vec3 cubePos[] = {
-            vec3( 0.0f,  0.0f,  0.0f), 
-            vec3( 2.0f,  5.0f, -15.0f), 
-            vec3(-1.5f, -2.2f, -2.5f),  
-            vec3(-3.8f, -2.0f, -12.3f),  
-            vec3( 2.4f, -0.4f, -3.5f),  
-            vec3(-1.7f,  3.0f, -7.5f),  
-            vec3( 1.3f, -2.0f, -2.5f),  
-            vec3( 1.5f,  2.0f, -2.5f), 
-            vec3( 1.5f,  0.2f, -1.5f), 
-            vec3(-1.3f,  1.0f, -1.5f)  
-        };
-
         mat4 projection = perspective(float(M_PI) / 3.f, float(W) / float(H), 0.1f, 100.f);
         program->setMatrix4fv("projection", 1, value_ptr(projection));
 
-        mat4 view = mat4(1.f);
-        view = lookAt(vec3(sin(time), 0.f, cos(time)) * 5.f,
-                      vec3(0.f),
-                      vec3(0.f, 1.f, 0.f));
+        mat4 view = lookAt(vec3(0.f, 0.f, -5.f),
+                           vec3(0.f),
+                           vec3(0.f, 1.f, 0.f));
         program->setMatrix4fv("view", 1, value_ptr(view));
 
-        for (int i = 0; i < sizeof(cubePos)/sizeof(cubePos[0]); ++i) {
-            mat4 model = mat4(1.f);
-            model = translate(model, cubePos[i]);
-            model = rotate(model, time * 2.f + float(i) * 0.3f, vec3(0.5f, sin(i * 100.f + 1.f), 0.0f));
-            
-            program->setMatrix4fv("model", 1, value_ptr(model));
+        mat4 model = mat4(1.f);
+        model = rotate(model, time * 2.f, vec3(0.5f, 1.f, 0.0f));
+        
+        program->setMatrix4fv("model", 1, value_ptr(model));
 
-            glBindVertexArray(VAOs[0]);
-            glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(indices[0]), GL_UNSIGNED_INT, 0);
-        }
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(indices[0]), GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
         SDL_GL_SwapWindow(win);
     }
 
-    glDeleteVertexArrays(1, VAOs);
-    glDeleteBuffers     (1, VBOs);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers     (1, &VBO);
 
     SDL_GL_DeleteContext(cont);
     SDL_DestroyWindow(win);
